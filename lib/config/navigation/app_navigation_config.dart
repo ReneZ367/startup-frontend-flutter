@@ -5,6 +5,7 @@ abstract final class AppRoutes {
   static const String home = '/';
   static const String settings = '/settings';
   static const String login = '/login';
+  static const String test = '/test';
 }
 
 /// Defines how main navigation is rendered (drawer vs bottom bar).
@@ -25,6 +26,7 @@ class NavItem {
 abstract final class AppNavigationConfig {
   static const AppNavigationType navigationType = AppNavigationType.drawer;
 
+  /// Shown in shell (drawer/bottom nav) when logged in. Login is not here; use Settings > Logout.
   static const List<NavItem> navItems = [
     NavItem(path: AppRoutes.home, label: 'Home', icon: Icons.home_outlined),
     NavItem(
@@ -32,6 +34,6 @@ abstract final class AppNavigationConfig {
       label: 'Settings',
       icon: Icons.settings_outlined,
     ),
-    NavItem(path: AppRoutes.login, label: 'Login', icon: Icons.login_outlined),
+    NavItem(path: AppRoutes.test, label: 'Test', icon: Icons.code_outlined),
   ];
 }

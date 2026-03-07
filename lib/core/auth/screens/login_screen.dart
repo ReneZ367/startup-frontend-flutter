@@ -1,7 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../config/navigation/app_navigation_config.dart';
 import '../../../theme/theme_extensions.dart';
-import '../api/auth_api.dart';
+import '../auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -72,20 +75,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(height: spacing.lg),
                       FilledButton(
                         onPressed: () async {
-                          final response = await AuthApi().login(
-                            email: _emailController.text.trim(),
-                            password: _passwordController.text,
-                          );
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                response.statusCode == 200
-                                    ? 'Login OK'
-                                    : 'Login failed: ${response.statusCode}',
-                              ),
-                            ),
-                          );
+                          try {
+                            await authService.login(
+                              email: _emailController.text.trim(),
+                              password: _passwordController.text,
+                            );
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Login OK')),
+                            );
+                            context.go(AppRoutes.home);
+                          } catch (e) {
+                            if (!context.mounted) return;
+                            final message = e is DioException
+                                ? (e.response?.data?.toString() ??
+                                    '${e.response?.statusCode ?? e.type}')
+                                : e.toString();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Login failed: $message')),
+                            );
+                          }
                         },
                         child: const Text('Sign in'),
                       ),

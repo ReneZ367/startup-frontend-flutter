@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../config/navigation/app_navigation_config.dart';
+import '../../../core/auth/auth_service.dart';
 import '../../../theme/theme_extensions.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -29,6 +32,15 @@ class SettingsScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
+            ),
+            SizedBox(height: spacing.lg),
+            FilledButton.tonal(
+              onPressed: () async {
+                await authService.logout();
+                if (!context.mounted) return;
+                context.go(AppRoutes.login);
+              },
+              child: const Text('Logout'),
             ),
           ],
         ),

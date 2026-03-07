@@ -1,6 +1,6 @@
- # Implementation summary
+# Implementation summary
 
-Audit of `lib/` and related files. Last updated after theme refactor and scaling-oriented improvements.
+Audit of `lib/` and related files. Last updated after core auth and shared networking.
 
 ## Layout
 
@@ -14,6 +14,15 @@ lib/
 │   │   └── app_navigation_config.dart
 │   └── router/
 │       └── app_router.dart
+├── core/
+│   ├── auth/
+│   │   ├── auth_api.dart
+│   │   ├── auth_service.dart
+│   │   └── screens/
+│   │       └── login_screen.dart
+│   └── network/
+│       ├── api.dart
+│       └── api_client.dart
 ├── components/
 │   └── navigation/
 │       └── app_shell.dart
@@ -30,60 +39,68 @@ lib/
             └── settings_screen.dart
 ```
 
-**11 Dart files** in `lib/`. Top-level `constants.dart`; no `utils/`, `models/`, `services/` folders yet.
+---
+
+## Core: auth and networking
+
+**Auth:** Login/logout, token in secure storage, auth state (`isLoggedIn`), startup validation via `auth/check`, router redirect by auth, 401/419 → logout. Token generation counter so a stale 401 does not clear a newly stored token.
+
+**Networking:** Shared Dio client, base URL and `Accept: application/json`, interceptors (Bearer token, 401 handling), thin helpers `apiGet` / `apiPost` / etc.
+
+Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/networking.md).
 
 ---
 
 ## Entry & app
 
-| File | Role |
-|------|------|
-| `main.dart` | Entry point; runs `FountaApp`. |
-| `app.dart` | `FountaApp`: `MaterialApp.router` with "Founta App", `theme: AppTheme.light`, `darkTheme: AppTheme.dark`, router from `createAppRouter()`. |
+| File        | Role                                                                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `main.dart` | Async entry; `authService.init()`, `onUnauthorized = () => authService.logout()`, then `runApp(FountaApp)`.                               |
+| `app.dart`  | `FountaApp`: `MaterialApp.router` with "Founta App", `theme: AppTheme.light`, `darkTheme: AppTheme.dark`, router from `createAppRouter()`. |
 
 ---
 
 ## Constants
 
-| File | Role |
-|------|------|
+| File             | Role                                                                                                                       |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `constants.dart` | `Constants`: abstract final class with static consts (e.g. `baseUrl`). Single place for app-wide values like API base URL. |
 
 ---
 
 ## Theme
 
-| File | Role |
-|------|------|
-| `theme/app_theme.dart` | Builds `ThemeData` (Material 3, `ColorScheme.fromSeed`) and registers `AppThemeExtension` in `extensions`. Single `_seedColor` for branding; swap for tenant/API later. |
+| File                             | Role                                                                                                                                                                                         |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `theme/app_theme.dart`           | Builds `ThemeData` (Material 3, `ColorScheme.fromSeed`) and registers `AppThemeExtension` in `extensions`. Single `_seedColor` for branding; swap for tenant/API later.                      |
 | `theme/app_theme_extension.dart` | `AppThemeExtension`: colors (primary, error, success, warning, drawerHeader), `AppSpacing` (xxs→xxl). `.light()` / `.dark()` factories from `ColorScheme`. Implements `copyWith` and `lerp`. |
-| `theme/theme_extensions.dart` | `BuildContext` extension: `context.appTheme` (nullable), `context.appSpacing` (never null, fallback to standard). Reduces boilerplate in screens. |
+| `theme/theme_extensions.dart`    | `BuildContext` extension: `context.appTheme` (nullable), `context.appSpacing` (never null, fallback to standard). Reduces boilerplate in screens.                                            |
 
 ---
 
 ## Routing & navigation
 
-| File | Role |
-|------|------|
-| `config/router/app_router.dart` | go_router with one `ShellRoute` (AppShell). Routes: `/` (Home), `/settings` (Settings). |
-| `config/navigation/app_navigation_config.dart` | Single source: `AppRoutes`, `AppNavigationType` (drawer \| bottom), `NavItem`, `AppNavigationConfig.navItems`. |
-| `components/navigation/app_shell.dart` | Shell: drawer or bottom nav from config; drawer header uses `context.appTheme?.drawerHeader`. |
+| File                                           | Role                                                                                                                                 |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `config/router/app_router.dart`                | go_router; `refreshListenable: authService.isLoggedIn`, redirect by auth; routes: `/login`, shell with `/`, `/settings`.              |
+| `config/navigation/app_navigation_config.dart` | `AppRoutes`, `AppNavigationType`, `NavItem`; `navItems` for shell (Home, Settings; Login via redirect).                               |
+| `components/navigation/app_shell.dart`         | Shell: drawer or bottom nav from config; drawer header uses `context.appTheme?.drawerHeader`.                                        |
 
 ---
 
 ## Features
 
-| Feature | Screen | Status |
-|---------|--------|--------|
-| Home | `features/home/screens/home_screen.dart` | Uses `context.appSpacing`, `context.appTheme`, title + welcome card. |
-| Settings | `features/settings/screens/settings_screen.dart` | Uses `context.appSpacing`, themed title + subtitle. |
+| Feature  | Screen                                           | Status                                                                 |
+| -------- | ------------------------------------------------ | --------------------------------------------------------------------- |
+| Home     | `features/home/screens/home_screen.dart`         | Uses `context.appSpacing`, `context.appTheme`, title + welcome card.  |
+| Settings | `features/settings/screens/settings_screen.dart` | Themed title + subtitle; Logout button (authService.logout(), go login). |
 
 ---
 
 ## Tests
 
-| File | Role |
-|------|------|
+| File                    | Role                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------ |
 | `test/widget_test.dart` | Smoke test: pumps `FountaApp`, expects "Home" once. No counter; matches current app. |
 
 ---
@@ -91,7 +108,9 @@ lib/
 ## Dependencies (relevant to lib)
 
 - **go_router** – routing and shell.
-- Flutter SDK, Material; **theme** is app-defined (ThemeExtension, no extra packages).
+- **dio** – shared HTTP client and interceptors.
+- **flutter_secure_storage** – token storage.
+- Flutter SDK, Material; **theme** is app-defined (ThemeExtension).
 
 ---
 
@@ -115,5 +134,5 @@ lib/
 
 ## Summary
 
-- **Done:** App entry, Material 3 + ThemeExtension theme, context theme helpers, go_router + shell, config-driven nav, Home and Settings using theme, passing smoke test.
-- **Not yet:** Env/config for API, extra features, deeper tests, CI.
+- **Done:** App entry, Material 3 + ThemeExtension theme, context theme helpers, go_router + shell, config-driven nav, **core auth** (login/logout, token, auth/check, redirect, token generation), **shared networking** (Dio, api helpers, interceptors), Home and Settings, passing smoke test.
+- **Not yet:** Env/config for API flavors, extra features, deeper tests, CI.
