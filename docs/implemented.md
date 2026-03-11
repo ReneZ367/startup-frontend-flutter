@@ -65,17 +65,17 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 
 | File        | Role                                                                                                                                       |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `main.dart` | Async entry; `authService.init()`, `onUnauthorized = () => authService.logout()`, then `runApp(FountaApp)`.                               |
+| `main.dart` | Async entry; `authService.init()`, `onUnauthorized = () => authService.logout()`, then `runApp(FountaApp)`.                                |
 | `app.dart`  | `FountaApp`: `MaterialApp.router` with "Founta App", `theme: AppTheme.light`, `darkTheme: AppTheme.dark`, router from `createAppRouter()`. |
 
 ---
 
 ## Config and constants
 
-| File             | Role                                                                                                                                 |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| File              | Role                                                                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `config/env.dart` | `Env`: build-time config from `--dart-define`. `apiBaseUrl` and `webAppUrl` (defaults: ddev API and web URLs). Use for dev/staging/prod without code changes. |
-| `constants.dart` | `Constants`: app-wide values. `baseUrl` is sourced from `Env.apiBaseUrl`; other consts (e.g. `webAppUrl`, policy URLs) live here.     |
+| `constants.dart`  | `Constants`: app-wide values. `baseUrl` is sourced from `Env.apiBaseUrl`; other consts (e.g. `webAppUrl`, policy URLs) live here.                             |
 
 ---
 
@@ -91,23 +91,23 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 
 ## Routing & navigation
 
-| File                                           | Role                                                                                                                                 |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `config/router/app_router.dart`                | go_router; `refreshListenable: authService.isLoggedIn`, redirect by auth; routes: `/login`, shell with `/`, `/settings`, `/test`.      |
-| `config/navigation/app_navigation_config.dart` | `AppRoutes`, `AppNavigationType`, `NavItem`; `navItems` for shell (Home, Test, Settings; Login via redirect).                            |
-| `components/navigation/app_shell.dart`         | Shell: drawer or bottom nav from config; drawer header uses `context.appTheme?.drawerHeader`.                                        |
+| File                                           | Role                                                                                                                              |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `config/router/app_router.dart`                | go_router; `refreshListenable: authService.isLoggedIn`, redirect by auth; routes: `/login`, shell with `/`, `/settings`, `/test`. |
+| `config/navigation/app_navigation_config.dart` | `AppRoutes`, `AppNavigationType`, `NavItem`; `navItems` for shell (Home, Test, Settings; Login via redirect).                     |
+| `components/navigation/app_shell.dart`         | Shell: drawer or bottom nav from config; drawer header uses `context.appTheme?.drawerHeader`.                                     |
 
 ---
 
 ## Features
 
-| Feature  | Screen / API                                      | Status                                                                                                                                 |
-| -------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Home     | `features/home/screens/home_screen.dart`         | Uses `context.appSpacing`, `context.appTheme`, title + welcome card.                                                                  |
-| Settings | `features/settings/screens/settings_screen.dart`  | Themed title + subtitle; **Logout**; **Delete account** (confirmation, then delete API + logout); **Privacy policy** and **Impressum** open in browser. |
-|          | `features/settings/api/delete_account_api.dart`   | `apiDelete('user')` for account deletion.                                                                                               |
-| Testing  | `features/testing/screens/test_screen.dart`      | Backend status bar (green up / red down), polled every 3s; Fetch data + user card.                                                      |
-|          | `features/testing/api/test_api.dart`             | Test API (e.g. user/me).                                                                                                               |
+| Feature  | Screen / API                                     | Status                                                                                                                                                  |
+| -------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Home     | `features/home/screens/home_screen.dart`         | Uses `context.appSpacing`, `context.appTheme`, title + welcome card.                                                                                    |
+| Settings | `features/settings/screens/settings_screen.dart` | Themed title + subtitle; **Logout**; **Delete account** (confirmation, then delete API + logout); **Privacy policy** and **Impressum** open in browser. |
+|          | `features/settings/api/delete_account_api.dart`  | `apiDelete('user')` for account deletion.                                                                                                               |
+| Testing  | `features/testing/screens/test_screen.dart`      | Backend status bar (green up / red down), polled every 3s; Fetch data + user card.                                                                      |
+|          | `features/testing/api/test_api.dart`             | Test API (e.g. user/me).                                                                                                                                |
 
 ---
 
