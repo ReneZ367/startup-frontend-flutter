@@ -98,6 +98,20 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: const Text('Sign in'),
                       ),
+                      SizedBox(height: spacing.md),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                            onPressed: () => context.push(AppRoutes.forgotPassword),
+                            child: const Text('Forgot Password?'),
+                          ),
+                          TextButton(
+                            onPressed: () => context.push(AppRoutes.register),
+                            child: const Text('Register'),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),

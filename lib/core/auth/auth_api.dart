@@ -15,6 +15,27 @@ class AuthApi {
     });
   }
 
+  /// Registers a new user. Returns the decoded response (e.g. { 'token': String, 'message': String }).
+  Future<dynamic> register({
+    required String name,
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    return apiPost('register', {
+      'name': name,
+      'email': email,
+      'password': password,
+      'password_confirmation': passwordConfirmation,
+      'device_name': _deviceName,
+    });
+  }
+
+  /// Sends a password reset link to the given email.
+  Future<void> forgotPassword({required String email}) async {
+    await apiPost('forgot-password', {'email': email});
+  }
+
   /// Tells the server to invalidate the current token. Uses Bearer token from the interceptor.
   /// Backend may expect POST /logout; change to apiDelete('logout') if your API differs.
   Future<void> logout() async {

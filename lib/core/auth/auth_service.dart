@@ -41,9 +41,34 @@ class AuthService {
   /// Calls API, stores token, sets [isLoggedIn] to true. Throws on API error.
   Future<void> login({required String email, required String password}) async {
     final data = await AuthApi().login(email: email, password: password);
+    await _handleAuthResponse(data);
+  }
+
+  /// Calls API to register, stores token if returned, sets [isLoggedIn] to true.
+  Future<void> register({
+    required String name,
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    final data = await AuthApi().register(
+      name: name,
+      email: email,
+      password: password,
+      passwordConfirmation: passwordConfirmation,
+    );
+    await _handleAuthResponse(data);
+  }
+
+  /// Requests a password reset link.
+  Future<void> forgotPassword({required String email}) async {
+    await AuthApi().forgotPassword(email: email);
+  }
+
+  Future<void> _handleAuthResponse(dynamic data) async {
     final token = data is Map ? data['token'] as String? : null;
     if (token == null || token.isEmpty) {
-      throw StateError('Login response had no token');
+      throw StateError('Auth response had no token');
     }
     await _storage.write(key: authTokenStorageKey, value: token);
     bumpTokenGeneration();

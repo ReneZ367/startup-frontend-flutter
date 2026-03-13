@@ -18,9 +18,7 @@ lib/
 ├── core/
 │   ├── auth/
 │   │   ├── auth_api.dart
-│   │   ├── auth_service.dart
-│   │   └── screens/
-│   │       └── login_screen.dart
+│   │   └── auth_service.dart
 │   └── network/
 │       ├── api.dart
 │       ├── api_client.dart
@@ -103,6 +101,9 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 
 | Feature  | Screen / API                                     | Status                                                                                                                                                  |
 | -------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth     | `features/auth/screens/login_screen.dart`        | Login form, links to Register/Forgot Password.                                                                                                          |
+|          | `features/auth/screens/register_screen.dart`     | Registration form (name, email, password, confirm).                                                                                                     |
+|          | `features/auth/screens/forgot_password_screen.dart` | Forgot password form (email).                                                                                                                           |
 | Home     | `features/home/screens/home_screen.dart`         | Uses `context.appSpacing`, `context.appTheme`, title + welcome card.                                                                                    |
 | Settings | `features/settings/screens/settings_screen.dart` | Themed title + subtitle; **Logout**; **Delete account** (confirmation, then delete API + logout); **Privacy policy** and **Impressum** open in browser. |
 |          | `features/settings/api/delete_account_api.dart`  | `apiDelete('user')` for account deletion.                                                                                                               |
@@ -149,5 +150,5 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 
 ## Summary
 
-- **Done:** App entry, Material 3 + ThemeExtension theme, context theme helpers, **package imports** (`package:founta_app/...`) across lib; go_router + shell, config-driven nav (Home, Test, Settings); **core auth** (login/logout, token, auth/check, redirect, token generation); **shared networking** (Dio, api helpers, interceptors); **health check** (`health.dart`, `checkBackendUp()` for `/up`); Home, **Settings** (logout, delete account, Privacy policy & Impressum links), **Testing** (backend status bar + fetch data); **url_launcher** for external links; passing smoke test.
+- **Done:** App entry, Material 3 + ThemeExtension theme, context theme helpers, **package imports** (`package:founta_app/...`) across lib; go_router + shell, config-driven nav (Home, Test, Settings); **core auth** (login/logout, token, auth/check, redirect, token generation); **shared networking** (Dio, api helpers, interceptors); **health check** (`health.dart`, `checkBackendUp()` for `/up`); Home, **Settings** (logout, delete account, Privacy policy & Impressum links), **Testing** (backend status bar + fetch data); **url_launcher** for external links; passing smoke test. **Auth features:** Login, Register, Forgot Password moved to `features/auth` and fully implemented.
 - **Not yet:** Deeper tests, CI.

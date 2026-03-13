@@ -8,6 +8,7 @@ Future<dynamic> apiGet(String endpoint, {Map<String, dynamic>? params}) async {
 
 /// POST [endpoint] with JSON [data].
 Future<dynamic> apiPost(String endpoint, dynamic data) async {
+  print('apiPost: $endpoint, $data');
   final response = await apiClient.post(endpoint, data: data);
   return response.data;
 }
