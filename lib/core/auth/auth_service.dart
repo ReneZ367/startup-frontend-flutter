@@ -60,9 +60,9 @@ class AuthService {
     await _handleAuthResponse(data);
   }
 
-  /// Requests a password reset link.
-  Future<void> forgotPassword({required String email}) async {
-    await AuthApi().forgotPassword(email: email);
+  /// Requests a password reset link. Returns the API response (e.g. { 'message': String }).
+  Future<dynamic> forgotPassword({required String email}) async {
+    return AuthApi().forgotPassword(email: email);
   }
 
   Future<void> _handleAuthResponse(dynamic data) async {

@@ -31,9 +31,9 @@ class AuthApi {
     });
   }
 
-  /// Sends a password reset link to the given email.
-  Future<void> forgotPassword({required String email}) async {
-    await apiPost('forgot-password', {'email': email});
+  /// Sends a password reset link to the given email. Returns the decoded response.
+  Future<dynamic> forgotPassword({required String email}) async {
+    return apiPost('forgot-password', {'email': email});
   }
 
   /// Tells the server to invalidate the current token. Uses Bearer token from the interceptor.

@@ -1,9 +1,10 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:founta_app/config/navigation/app_navigation_config.dart';
 import 'package:founta_app/core/auth/auth_service.dart';
+import 'package:founta_app/core/network/api_error.dart';
+import 'package:founta_app/theme/app_theme_extension.dart';
 import 'package:founta_app/theme/theme_extensions.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -16,6 +17,8 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController(text: 'editor@example.com');
   bool _isLoading = false;
+  String? _error;
+  String? _successMessage;
 
   @override
   void dispose() {
@@ -23,24 +26,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
+  String _extractMessage(dynamic data) {
+    if (data is Map<String, dynamic>) {
+      final msg = data['message'];
+      if (msg is String) return msg;
+    }
+    return data?.toString() ?? 'Request sent.';
+  }
+
   Future<void> _sendResetLink() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _error = null;
+      _successMessage = null;
+      _isLoading = true;
+    });
     try {
-      await authService.forgotPassword(email: _emailController.text.trim());
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password reset link sent to email')),
+      final data = await authService.forgotPassword(
+        email: _emailController.text.trim(),
       );
-      context.go(AppRoutes.login);
+      if (!mounted) return;
+      setState(() => _successMessage = _extractMessage(data));
     } catch (e) {
       if (!mounted) return;
-      final message = e is DioException
-          ? (e.response?.data?.toString() ??
-              '${e.response?.statusCode ?? e.type}')
-          : e.toString();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed: $message')),
-      );
+      setState(() => _error = parseApiError(e));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -87,11 +95,44 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         autocorrect: false,
-                        decoration: const InputDecoration(
+                        onChanged: (_) {
+                          if (_error != null || _successMessage != null) {
+                            setState(() {
+                              _error = null;
+                              _successMessage = null;
+                            });
+                          }
+                        },
+                        decoration: InputDecoration(
                           labelText: 'Email',
-                          border: OutlineInputBorder(),
+                          border: const OutlineInputBorder(),
+                          errorText: _error,
                         ),
                       ),
+                      if (_successMessage != null) ...[
+                        SizedBox(height: spacing.md),
+                        Container(
+                          padding: EdgeInsets.all(spacing.sm),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                    .extension<AppThemeExtension>()
+                                    ?.success
+                                    .withOpacity(0.25) ??
+                                colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _successMessage!,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context)
+                                      .extension<AppThemeExtension>()
+                                      ?.success ??
+                                  colorScheme.onPrimaryContainer,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                       SizedBox(height: spacing.lg),
                       FilledButton(
                         onPressed: _isLoading ? null : _sendResetLink,

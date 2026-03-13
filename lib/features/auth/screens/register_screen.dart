@@ -1,9 +1,9 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:founta_app/config/navigation/app_navigation_config.dart';
 import 'package:founta_app/core/auth/auth_service.dart';
+import 'package:founta_app/core/network/api_error.dart';
 import 'package:founta_app/theme/theme_extensions.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -19,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _passwordConfirmationController = TextEditingController();
   bool _isLoading = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -29,8 +30,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  void _clearError() {
+    if (_error != null) setState(() => _error = null);
+  }
+
   Future<void> _register() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _error = null;
+      _isLoading = true;
+    });
     try {
       await authService.register(
         name: _nameController.text.trim(),
@@ -45,13 +53,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       context.go(AppRoutes.home);
     } catch (e) {
       if (!mounted) return;
-      final message = e is DioException
-          ? (e.response?.data?.toString() ??
-              '${e.response?.statusCode ?? e.type}')
-          : e.toString();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration failed: $message')),
-      );
+      setState(() => _error = parseApiError(e, fallbackPrefix: 'Registration failed'));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -92,6 +94,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       TextField(
                         controller: _nameController,
                         keyboardType: TextInputType.name,
+                        onChanged: (_) => _clearError(),
                         decoration: const InputDecoration(
                           labelText: 'Name',
                           border: OutlineInputBorder(),
@@ -102,6 +105,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         autocorrect: false,
+                        onChanged: (_) => _clearError(),
                         decoration: const InputDecoration(
                           labelText: 'Email',
                           border: OutlineInputBorder(),
@@ -112,6 +116,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         controller: _passwordController,
                         obscureText: true,
                         autocorrect: false,
+                        onChanged: (_) => _clearError(),
                         decoration: const InputDecoration(
                           labelText: 'Password',
                           border: OutlineInputBorder(),
@@ -122,11 +127,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         controller: _passwordConfirmationController,
                         obscureText: true,
                         autocorrect: false,
+                        onChanged: (_) => _clearError(),
                         decoration: const InputDecoration(
                           labelText: 'Confirm Password',
                           border: OutlineInputBorder(),
                         ),
                       ),
+                      if (_error != null) ...[
+                        SizedBox(height: spacing.sm),
+                        Text(
+                          _error!,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.error,
+                          ),
+                        ),
+                      ],
                       SizedBox(height: spacing.lg),
                       FilledButton(
                         onPressed: _isLoading ? null : _register,

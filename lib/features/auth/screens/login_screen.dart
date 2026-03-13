@@ -1,9 +1,9 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:founta_app/config/navigation/app_navigation_config.dart';
 import 'package:founta_app/core/auth/auth_service.dart';
+import 'package:founta_app/core/network/api_error.dart';
 import 'package:founta_app/theme/theme_extensions.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +16,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController(text: 'editor@example.com');
   final _passwordController = TextEditingController(text: '11111111');
+  String? _loginError;
 
   @override
   void dispose() {
@@ -57,9 +58,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         autocorrect: false,
-                        decoration: const InputDecoration(
+                        onChanged: (_) {
+                          if (_loginError != null) setState(() => _loginError = null);
+                        },
+                        decoration: InputDecoration(
                           labelText: 'Email',
-                          border: OutlineInputBorder(),
+                          border: const OutlineInputBorder(),
                         ),
                       ),
                       SizedBox(height: spacing.md),
@@ -67,14 +71,27 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _passwordController,
                         obscureText: true,
                         autocorrect: false,
-                        decoration: const InputDecoration(
+                        onChanged: (_) {
+                          if (_loginError != null) setState(() => _loginError = null);
+                        },
+                        decoration: InputDecoration(
                           labelText: 'Password',
-                          border: OutlineInputBorder(),
+                          border: const OutlineInputBorder(),
                         ),
                       ),
+                      if (_loginError != null) ...[
+                        SizedBox(height: spacing.sm),
+                        Text(
+                          _loginError!,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.error,
+                          ),
+                        ),
+                      ],
                       SizedBox(height: spacing.lg),
                       FilledButton(
                         onPressed: () async {
+                          setState(() => _loginError = null);
                           try {
                             await authService.login(
                               email: _emailController.text.trim(),
@@ -87,13 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             context.go(AppRoutes.home);
                           } catch (e) {
                             if (!context.mounted) return;
-                            final message = e is DioException
-                                ? (e.response?.data?.toString() ??
-                                    '${e.response?.statusCode ?? e.type}')
-                                : e.toString();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Login failed: $message')),
-                            );
+                            setState(() => _loginError = parseApiError(e, fallbackPrefix: 'Login failed'));
                           }
                         },
                         child: const Text('Sign in'),
@@ -103,7 +114,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           TextButton(
-                            onPressed: () => context.push(AppRoutes.forgotPassword),
+                            onPressed: () =>
+                                context.push(AppRoutes.forgotPassword),
                             child: const Text('Forgot Password?'),
                           ),
                           TextButton(

@@ -18,6 +18,7 @@ Feature doc for the shared API layer (Dio client + interceptors + thin helpers).
 |------|------|
 | `lib/core/network/api_client.dart` | Single `Dio` instance; base URL (trailing slash); headers `Content-Type` and `Accept: application/json`; timeouts; request interceptor (Bearer token from secure storage); error interceptor (401/419 + token generation check). |
 | `lib/core/network/api.dart` | `apiGet`, `apiPost`, `apiPut`, `apiDelete`, `apiPatch` – path-only endpoints, return `response.data`. |
+| `lib/core/network/api_error.dart` | `parseApiError` – parses Laravel-style validation errors from `DioException`, returns user-friendly message. |
 
 ---
 
@@ -31,6 +32,49 @@ Feature doc for the shared API layer (Dio client + interceptors + thin helpers).
 ## Token generation
 
 Used so that a delayed 401 from an old request does not clear a newly stored token. See [auth.md](auth.md#token-generation-401-handling).
+
+---
+
+## Error message handling
+
+API validation errors use a common format (Laravel-style):
+
+```json
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "email": ["The provided credentials are incorrect."],
+    "password": ["The password field is required."]
+  }
+}
+```
+
+When a request fails, Dio throws `DioException`. The response body is in `e.response?.data`.
+
+**Parsing steps:**
+
+1. Check `e is DioException`; otherwise use `e.toString()`.
+2. Cast `e.response?.data` to `Map<String, dynamic>`.
+3. If `errors` exists and is a map, iterate over its values (arrays of strings) and return the first message.
+4. Else use `message` if present.
+5. Else fall back to a generic message (e.g. `"Failed: ${e.response?.statusCode ?? e.type}"`).
+
+**UI display:**
+
+- For forms with multiple related fields (e.g. login email + password), show a **single shared error message** below the inputs, in `colorScheme.error`.
+- For single-field forms (e.g. forgot password), use `InputDecoration.errorText` on the field.
+- Clear the error when the user edits any relevant field.
+
+Use the shared helper `parseApiError` from `lib/core/network/api_error.dart`:
+
+```dart
+import 'package:founta_app/core/network/api_error.dart';
+
+// In catch block:
+setState(() => _error = parseApiError(e, fallbackPrefix: 'Login failed'));
+```
+
+See `login_screen.dart`, `register_screen.dart`, and `forgot_password_screen.dart` for examples.
 
 ---
 
