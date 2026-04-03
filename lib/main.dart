@@ -8,5 +8,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await authService.init();
   onUnauthorized = () => authService.logout();
+  onEmailNotVerified = (uri) {
+    debugPrint('[ApiClient] 403 EMAIL_NOT_VERIFIED $uri');
+    authService.notifyEmailNotVerified();
+  };
   runApp(const FountaApp());
 }

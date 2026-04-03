@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'package:founta_app/core/network/api_error.dart';
 import 'package:founta_app/core/network/health.dart';
 import 'package:founta_app/features/testing/api/test_api.dart';
 import 'package:founta_app/theme/app_theme_extension.dart';
@@ -16,7 +17,7 @@ class TestScreen extends StatefulWidget {
 
 class _TestScreenState extends State<TestScreen> {
   dynamic _data;
-  Object? _error;
+  String? _error;
   bool _loading = false;
   bool? _backendUp;
   bool _backendChecking = false;
@@ -67,7 +68,7 @@ class _TestScreenState extends State<TestScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e;
+        _error = parseApiError(e, fallbackPrefix: 'Request failed');
         _loading = false;
       });
     }
@@ -86,9 +87,10 @@ class _TestScreenState extends State<TestScreen> {
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.all(spacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
             Container(
               padding: EdgeInsets.symmetric(vertical: spacing.sm, horizontal: spacing.md),
               decoration: BoxDecoration(
@@ -135,6 +137,7 @@ class _TestScreenState extends State<TestScreen> {
               ),
             ],
           ],
+          ),
         ),
       ),
     );

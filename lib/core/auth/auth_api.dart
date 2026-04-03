@@ -3,6 +3,26 @@ import 'package:founta_app/core/network/api.dart';
 class AuthApi {
   static const String _deviceName = 'founta_app';
 
+  /// Parses `GET user/account/email-verification` (relative to the configured API base URL; e.g. `{ "email_verified": true, "email_verified_at": "..." }`).
+  /// Use a path without a leading slash so Dio keeps the base URL path prefix (e.g. `.../api/v1/`).
+  /// Falls back to legacy `verified` if present; otherwise returns `true` so the app stays usable when the shape differs.
+  Future<bool> fetchEmailVerificationStatus() async {
+    final data = await apiGet('user/account/email-verification');
+    if (data is Map) {
+      final map = Map<String, dynamic>.from(data);
+      final emailVerified = map['email_verified'];
+      if (emailVerified is bool) return emailVerified;
+      final legacy = map['verified'];
+      if (legacy is bool) return legacy;
+    }
+    return true;
+  }
+
+  /// Sends another verification email to the authenticated user. Returns decoded JSON (e.g. `message`).
+  Future<dynamic> sendEmailVerificationNotification() async {
+    return apiPost('email/verification-notification', {});
+  }
+
   /// Returns the decoded response (e.g. { 'token': String, 'message': String }).
   Future<dynamic> login({
     required String email,

@@ -6,8 +6,8 @@ Auth lives in `lib/core/auth/`: state, login/logout, token storage, and startup 
 
 ## Overview
 
-- **AuthService** (`auth_service.dart`) – Single source of truth for “is the user logged in?” (`ValueNotifier<bool> isLoggedIn`). Exposes `init()`, `login()`, `logout()`.
-- **AuthApi** (`auth_api.dart`) – Thin API layer: `login()`, `logout()` using the shared `api.dart` helpers.
+- **AuthService** (`auth_service.dart`) – Single source of truth for “is the user logged in?” (`ValueNotifier<bool> isLoggedIn`) and email verification (`ValueNotifier<bool> isEmailVerified`). Exposes `init()`, `login()`, `logout()`.
+- **AuthApi** (`auth_api.dart`) – Thin API layer: `login()`, `logout()`, email verification helpers using the shared `api.dart` helpers.
 - **Login screen** (`screens/login_screen.dart`) – Calls `authService.login()`; on success navigates to home.
 - **Token** – Stored in secure storage under `authTokenStorageKey` (from `api_client.dart`). Read by the Dio request interceptor; written after login; cleared on logout or 401/419.
 
@@ -17,7 +17,7 @@ Auth lives in `lib/core/auth/`: state, login/logout, token storage, and startup 
 
 - **main.dart** – `await authService.init()` before `runApp()`. `onUnauthorized = () => authService.logout()` so 401/419 trigger logout.
 - **init()** – Reads token from storage. If present, calls `GET auth/check`; only sets `isLoggedIn = true` when the backend returns `{ "valid": true }`. Clears token on 401 or invalid response so expired tokens don’t show the main app.
-- **Router** – `refreshListenable: authService.isLoggedIn`, redirect: not logged in → `/login`; logged in and on `/login` → home. Protected routes require login; only paths in `_publicPaths` (e.g. login) are allowed when not logged in.
+- **Router** – `refreshListenable` includes `isLoggedIn` and `isEmailVerified`. Not logged in → `/login`; logged in with unverified email → `/verify-email`; otherwise protected routes as before.
 
 ---
 
@@ -31,3 +31,12 @@ To avoid a **stale 401** wiping a newly stored token (e.g. user logs in again, t
 - **Security** – Only an integer is attached to requests; the token is never put in `RequestOptions`, so logging or serializing request options does not expose the token.
 
 See also: [networking.md](networking.md) for the API client and interceptors.
+
+---
+
+## Email verification
+
+- **Status** – After a valid `auth/check`, `AuthService` calls `AuthApi.fetchEmailVerificationStatus()` (`GET` `user/account/email-verification` relative to the API base, JSON `email_verified` and optional `email_verified_at`). Sets `isEmailVerified`; when logged in and `isEmailVerified` is false, the router sends the user to `/verify-email`.
+- **403 `EMAIL_NOT_VERIFIED`** – The API client may call `onEmailNotVerified`; `main.dart` forwards that to `authService.notifyEmailNotVerified()` so the same gate applies without logging out.
+- **Resend** – `VerifyEmailScreen` calls `authService.resendVerificationEmail()`, which `POST`s `email/verification-notification` with an empty JSON body and the usual Bearer token.
+- **Check after verifying** – The same screen can call `authService.checkEmailVerificationNow()` (same `GET` as `fetchEmailVerificationStatus`). When `email_verified` is true, `isEmailVerified` becomes true and the router leaves `/verify-email` for the main app.

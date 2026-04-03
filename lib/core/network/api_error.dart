@@ -1,4 +1,39 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
+
+import 'package:founta_app/enums/api_error_code_enum.dart';
+
+final Map<String, ApiErrorCodeEnum> _apiErrorCodeByWireValue = {
+  for (final v in ApiErrorCodeEnum.values) v.value: v,
+};
+
+/// Parses machine-readable `code` / `error_code` / `error` from a JSON body
+/// (same top-level shape as [parseApiError]: `message`, `errors`, …).
+String? _readApiMachineCode(dynamic data) {
+  var d = data;
+  if (d is String) {
+    try {
+      d = jsonDecode(d);
+    } catch (_) {
+      return null;
+    }
+  }
+  if (d is! Map) return null;
+  final map = Map<String, dynamic>.from(d);
+  for (final key in const ['code', 'error_code', 'error']) {
+    final v = map[key];
+    if (v is String && v.isNotEmpty) return v.trim();
+  }
+  return null;
+}
+
+/// JSON body (map or JSON string) mapped to a known [ApiErrorCodeEnum], or null if missing or unknown.
+ApiErrorCodeEnum? parseKnownApiErrorCode(dynamic data) {
+  final raw = _readApiMachineCode(data);
+  if (raw == null || raw.isEmpty) return null;
+  return _apiErrorCodeByWireValue[raw];
+}
 
 /// Parses API validation error from [DioException].
 ///

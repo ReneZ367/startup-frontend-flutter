@@ -19,4 +19,3 @@ class FountaApp extends StatelessWidget {
     );
   }
 }
-

@@ -7,6 +7,7 @@ import 'package:founta_app/core/auth/auth_service.dart';
 import 'package:founta_app/features/auth/screens/forgot_password_screen.dart';
 import 'package:founta_app/features/auth/screens/login_screen.dart';
 import 'package:founta_app/features/auth/screens/register_screen.dart';
+import 'package:founta_app/features/auth/screens/verify_email_screen.dart';
 import 'package:founta_app/features/home/screens/home_screen.dart';
 import 'package:founta_app/features/settings/screens/settings_screen.dart';
 import 'package:founta_app/features/testing/screens/test_screen.dart';
@@ -21,37 +22,55 @@ const _publicPaths = [
 /// Path to send logged-in users to when they hit a public-only path (e.g. login).
 const _defaultAuthPath = AppRoutes.home;
 
+/// Logged-out users only see public routes. Logged-in unverified users only see verify-email.
+String? _redirectForAuth(BuildContext _, GoRouterState state) {
+  final isLoggedIn = authService.isLoggedIn.value;
+  final location = state.matchedLocation;
+
+  if (!isLoggedIn) {
+    return _publicPaths.contains(location) ? null : AppRoutes.login;
+  }
+
+  final needsVerification = !authService.isEmailVerified.value;
+  if (needsVerification) {
+    return location == AppRoutes.verifyEmail ? null : AppRoutes.verifyEmail;
+  }
+
+  if (location == AppRoutes.verifyEmail || _publicPaths.contains(location)) {
+    return _defaultAuthPath;
+  }
+  return null;
+}
+
 GoRouter createAppRouter() {
   return GoRouter(
-    refreshListenable: authService.isLoggedIn,
-    redirect: (context, state) {
-      final isLoggedIn = authService.isLoggedIn.value;
-      final location = state.matchedLocation;
-      // Not logged in: only allow public paths (e.g. login). Everything else -> login.
-      if (!isLoggedIn && !_publicPaths.contains(location)) {
-        return AppRoutes.login;
-      }
-      // Logged in and on a public-only path (e.g. login) -> send to app.
-      if (isLoggedIn && _publicPaths.contains(location)) {
-        return _defaultAuthPath;
-      }
-      return null;
-    },
+    refreshListenable: Listenable.merge([
+      authService.isLoggedIn,
+      authService.isEmailVerified,
+    ]),
+    redirect: _redirectForAuth,
     routes: [
       GoRoute(
         path: AppRoutes.login,
         name: 'login',
-        pageBuilder: (_, __) => const MaterialPage(child: LoginScreen()),
+        pageBuilder: (context, state) => const MaterialPage(child: LoginScreen()),
       ),
       GoRoute(
         path: AppRoutes.register,
         name: 'register',
-        pageBuilder: (_, __) => const MaterialPage(child: RegisterScreen()),
+        pageBuilder: (context, state) => const MaterialPage(child: RegisterScreen()),
       ),
       GoRoute(
         path: AppRoutes.forgotPassword,
         name: 'forgotPassword',
-        pageBuilder: (_, __) => const MaterialPage(child: ForgotPasswordScreen()),
+        pageBuilder: (context, state) =>
+            const MaterialPage(child: ForgotPasswordScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.verifyEmail,
+        name: 'verifyEmail',
+        pageBuilder: (context, state) =>
+            const MaterialPage(child: VerifyEmailScreen()),
       ),
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),
@@ -59,17 +78,20 @@ GoRouter createAppRouter() {
           GoRoute(
             path: AppRoutes.home,
             name: 'home',
-            pageBuilder: (_, __) => const MaterialPage(child: HomeScreen()),
+            pageBuilder: (context, state) =>
+                const MaterialPage(child: HomeScreen()),
           ),
           GoRoute(
             path: AppRoutes.settings,
             name: 'settings',
-            pageBuilder: (_, __) => const MaterialPage(child: SettingsScreen()),
+            pageBuilder: (context, state) =>
+                const MaterialPage(child: SettingsScreen()),
           ),
           GoRoute(
             path: AppRoutes.test,
             name: 'test',
-            pageBuilder: (_, __) => const MaterialPage(child: TestScreen()),
+            pageBuilder: (context, state) =>
+                const MaterialPage(child: TestScreen()),
           ),
         ],
       ),

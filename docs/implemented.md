@@ -1,6 +1,6 @@
 # Implementation summary
 
-Audit of `lib/` and related files. Last updated after health check, delete account, settings links, and package imports.
+Audit of `lib/` and related files. Last updated after email verification gate, API error codes, and auth polling.
 
 ## Layout
 
@@ -9,6 +9,8 @@ lib/
 ├── main.dart
 ├── app.dart
 ├── constants.dart
+├── enums/
+│   └── api_error_code_enum.dart
 ├── config/
 │   ├── env.dart
 │   ├── navigation/
@@ -22,6 +24,7 @@ lib/
 │   └── network/
 │       ├── api.dart
 │       ├── api_client.dart
+│       ├── api_error.dart
 │       └── health.dart
 ├── components/
 │   └── navigation/
@@ -31,6 +34,12 @@ lib/
 │   ├── app_theme_extension.dart
 │   └── theme_extensions.dart
 └── features/
+    ├── auth/
+    │   └── screens/
+    │       ├── login_screen.dart
+    │       ├── register_screen.dart
+    │       ├── forgot_password_screen.dart
+    │       └── verify_email_screen.dart
     ├── home/
     │   └── screens/
     │       └── home_screen.dart
@@ -50,10 +59,13 @@ lib/
 
 ## Core: auth and networking
 
-**Auth:** Login/logout, token in secure storage, auth state (`isLoggedIn`), startup validation via `auth/check`, router redirect by auth, 401/419 → logout. Token generation counter so a stale 401 does not clear a newly stored token.
+**Auth:** Login/logout/register/forgot password; token in secure storage; **`isLoggedIn`** and **`isEmailVerified`** (`ValueNotifier`s). Startup: `auth/check` then **`GET user/account/email-verification`** to set `isEmailVerified`. Router: logged in but unverified → **`/verify-email`** only; verified → shell as usual. **403** with machine code `EMAIL_NOT_VERIFIED` → `onEmailNotVerified` in `main.dart` → `authService.notifyEmailNotVerified()` (session kept). **401/419** → logout (token generation counter still applies for stale 401). While logged in and unverified, **polling** every 3s re-fetches verification status until verified or logout.
 
-**Networking:** Shared Dio client, base URL and `Accept: application/json`, interceptors (Bearer token, 401 handling), thin helpers `apiGet` / `apiPost` / etc.
-**Health check:** `core/network/health.dart` exposes `checkBackendUp()` which calls the backend `/up` route (same host/scheme as API base URL); returns `true`/`false`, no auth; call from anywhere (e.g. splash, settings, test screen).
+**Auth API (high level):** `user/account/email-verification` (status), `email/verification-notification` (resend), plus existing login/register/logout/forgot-password paths. Use **paths without a leading slash** so Dio appends them to the API base URL path (e.g. `.../api/v1/`); a leading `/` on the path can make the request hit the **host root** and drop the `/api/v1/` segment.
+
+**Networking:** Shared Dio client, base URL and `Accept: application/json`, interceptors (Bearer token, 403 email-not-verified hook, 401/419 handling), **`api_error.dart`** (`parseApiError`, **`parseKnownApiErrorCode`** for JSON `code` / `error_code` / `error`), thin helpers `apiGet` / `apiPost` / etc.
+
+**Health check:** `core/network/health.dart` exposes `checkBackendUp()` which calls the backend `/up` route (same host/scheme as API base URL); returns `true`/`false`, no auth.
 
 Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/networking.md).
 
@@ -61,10 +73,10 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 
 ## Entry & app
 
-| File        | Role                                                                                                                                       |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `main.dart` | Async entry; `authService.init()`, `onUnauthorized = () => authService.logout()`, then `runApp(FountaApp)`.                                |
-| `app.dart`  | `FountaApp`: `MaterialApp.router` with "Founta App", `theme: AppTheme.light`, `darkTheme: AppTheme.dark`, router from `createAppRouter()`. |
+| File        | Role                                                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `main.dart` | `authService.init()`; `onUnauthorized = () => authService.logout()`; **`onEmailNotVerified`** → debug log + `notifyEmailNotVerified()`; `runApp(FountaApp)`. |
+| `app.dart`  | `FountaApp`: `MaterialApp.router` with themes, `createAppRouter()`.                                                                |
 
 ---
 
@@ -89,10 +101,10 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 
 ## Routing & navigation
 
-| File                                           | Role                                                                                                                              |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `config/router/app_router.dart`                | go_router; `refreshListenable: authService.isLoggedIn`, redirect by auth; routes: `/login`, shell with `/`, `/settings`, `/test`. |
-| `config/navigation/app_navigation_config.dart` | `AppRoutes`, `AppNavigationType`, `NavItem`; `navItems` for shell (Home, Test, Settings; Login via redirect).                     |
+| File                                           | Role                                                                                                                                 |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `config/router/app_router.dart`                | go_router; **`Listenable.merge([isLoggedIn, isEmailVerified])`**; redirect: not logged in → public routes/login; **logged in + unverified → `/verify-email`**; verified user on `/verify-email` → home; shell: `/`, `/settings`, `/test`. |
+| `config/navigation/app_navigation_config.dart` | **`AppRoutes`** includes `verifyEmail`; `navItems` for shell (Home, Test, Settings).                                                 |
 | `components/navigation/app_shell.dart`         | Shell: drawer or bottom nav from config; drawer header uses `context.appTheme?.drawerHeader`.                                     |
 
 ---
@@ -104,6 +116,7 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 | Auth     | `features/auth/screens/login_screen.dart`        | Login form, links to Register/Forgot Password.                                                                                                          |
 |          | `features/auth/screens/register_screen.dart`     | Registration form (name, email, password, confirm).                                                                                                     |
 |          | `features/auth/screens/forgot_password_screen.dart` | Forgot password form (email).                                                                                                                           |
+|          | `features/auth/screens/verify_email_screen.dart` | Shown when logged in and email unverified: resend (`POST email/verification-notification`), manual check, **polling** handled in `AuthService`.      |
 | Home     | `features/home/screens/home_screen.dart`         | Uses `context.appSpacing`, `context.appTheme`, title + welcome card.                                                                                    |
 | Settings | `features/settings/screens/settings_screen.dart` | Themed title + subtitle; **Logout**; **Delete account** (confirmation, then delete API + logout); **Privacy policy** and **Impressum** open in browser. |
 |          | `features/settings/api/delete_account_api.dart`  | `apiDelete('user')` for account deletion.                                                                                                               |
@@ -116,7 +129,7 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 
 | File                    | Role                                                                                 |
 | ----------------------- | ------------------------------------------------------------------------------------ |
-| `test/widget_test.dart` | Smoke test: pumps `FountaApp`, expects "Home" once. No counter; matches current app. |
+| `test/widget_test.dart` | Smoke test: sets `authService` logged-in + email verified, pumps `FountaApp`, `pumpAndSettle`, expects **at least one** `"Home"` (shell duplicates label). |
 
 ---
 
@@ -137,12 +150,13 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 - **ThemeExtension + single seed** – One place for tokens; tenant/brand = different `ThemeData`/seed.
 - **Context extension** – `context.appTheme` / `context.appSpacing` so screens stay short and consistent.
 - **Smoke test** – Verifies app and shell load; no dead counter test.
-- **Docs** – This file reflects current layout and theme.
+- **Docs** – This file, `docs/core/auth.md`, `docs/core/networking.md`.
 
 **Suggested next (when needed)**
 
 - **Env config** – Done. `lib/config/env.dart` provides `Env.apiBaseUrl` and `Env.webAppUrl` from `--dart-define`; `Constants` uses them for API, health, and web links. Add more keys in env.dart if needed.
 - **Route registration** – If many features, register routes from a list or config so adding a feature = one entry.
+- **Verify screen** – Optional **Log out** control if product wants users to switch accounts or leave a stuck unverified session without contacting support (not required if that flow is intentionally impossible).
 - **Feature tests** – Add navigation or screen-level tests when flows become critical.
 - **CI** – Run `flutter analyze` and `flutter test` on push/PR once the repo is shared.
 
@@ -150,5 +164,5 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 
 ## Summary
 
-- **Done:** App entry, Material 3 + ThemeExtension theme, context theme helpers, **package imports** (`package:founta_app/...`) across lib; go_router + shell, config-driven nav (Home, Test, Settings); **core auth** (login/logout, token, auth/check, redirect, token generation); **shared networking** (Dio, api helpers, interceptors); **health check** (`health.dart`, `checkBackendUp()` for `/up`); Home, **Settings** (logout, delete account, Privacy policy & Impressum links), **Testing** (backend status bar + fetch data); **url_launcher** for external links; passing smoke test. **Auth features:** Login, Register, Forgot Password moved to `features/auth` and fully implemented.
+- **Done:** App entry, Material 3 + ThemeExtension theme, context theme helpers, **package imports** (`package:founta_app/...`) across lib; go_router + shell, config-driven nav (Home, Test, Settings); **core auth** (login/logout/register/forgot, token, auth/check, **`isEmailVerified`**, verify gate, **403 EMAIL_NOT_VERIFIED** hook, **3s polling** while unverified, resend + manual check); **shared networking** (Dio, `api_error` + **ApiErrorCodeEnum**, interceptors); **health check**; Home, **Settings** (logout, delete account, policy links), **Testing** (backend status + fetch); **url_launcher**; passing smoke test. **Auth screens:** Login, Register, Forgot Password, **Verify email**.
 - **Not yet:** Deeper tests, CI.

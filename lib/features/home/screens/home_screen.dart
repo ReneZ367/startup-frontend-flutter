@@ -11,44 +11,44 @@ class HomeScreen extends StatelessWidget {
 
     return SafeArea(
       child: Padding(
-          padding: EdgeInsets.all(context.appSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Home',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
+        padding: EdgeInsets.all(context.appSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Home',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w600,
               ),
-              SizedBox(height: context.appSpacing.lg),
-              Card(
-                elevation: 0,
-                color: colorScheme.surfaceContainerHighest,
-                child: Padding(
-                  padding: EdgeInsets.all(context.appSpacing.md),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.home_rounded,
-                        size: 32,
-                        color: context.appTheme?.primary ?? colorScheme.primary,
+            ),
+            SizedBox(height: context.appSpacing.lg),
+            Card(
+              elevation: 0,
+              color: colorScheme.surfaceContainerHighest,
+              child: Padding(
+                padding: EdgeInsets.all(context.appSpacing.md),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.home_rounded,
+                      size: 32,
+                      color: context.appTheme?.primary ?? colorScheme.primary,
+                    ),
+                    SizedBox(width: context.appSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        'Welcome to Founta',
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      SizedBox(width: context.appSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          'Welcome to Founta',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
     );
   }
 }
