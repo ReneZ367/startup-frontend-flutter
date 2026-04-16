@@ -121,15 +121,22 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 | Settings | `features/settings/screens/settings_screen.dart` | Themed title + subtitle; **Logout**; **Delete account** (confirmation, then delete API + logout); **Privacy policy** and **Impressum** open in browser. |
 |          | `features/settings/api/delete_account_api.dart`  | `apiDelete('user')` for account deletion.                                                                                                               |
 | Testing  | `features/testing/screens/test_screen.dart`      | Backend status bar (green up / red down), polled every 3s; Fetch data + user card.                                                                      |
-|          | `features/testing/api/test_api.dart`             | Test API (e.g. user/me).                                                                                                                                |
+|          | `features/testing/api/test_api.dart`             | Test API call to `user`.                                                                                                                                 |
 
 ---
 
 ## Tests
 
-| File                    | Role                                                                                 |
-| ----------------------- | ------------------------------------------------------------------------------------ |
-| `test/widget_test.dart` | Smoke test: sets `authService` logged-in + email verified, pumps `FountaApp`, `pumpAndSettle`, expects **at least one** `"Home"` (shell duplicates label). |
+| File                                | Role                                                                                                                                         |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `test/widget_test.dart`             | Smoke test: sets `authService` logged-in + email verified, pumps `FountaApp`, `pumpAndSettle`, expects **at least one** `"Home"` (shell duplicates label). |
+| `test/core/auth/auth_service_test.dart` | Auth state lifecycle tests: init (no token / valid token / invalid token), login token storage, email-not-verified handling, logout cleanup. |
+| `test/core/auth/auth_api_test.dart` | Auth API contract tests: login/register payload shape and email verification status parsing/fallback behavior.                              |
+| `test/core/network/api_client_test.dart` | Interceptor tests: Bearer injection, 401 handling with token cleanup, login-path 401 exception, 403 `EMAIL_NOT_VERIFIED` callback.         |
+| `test/core/network/api_test.dart`   | Thin API helper tests for `apiGet` / `apiPost` / `apiPut` / `apiPatch` / `apiDelete` return values and request forwarding.               |
+| `test/core/network/health_test.dart` | Health check tests for `/up` success/failure behavior.                                                                                      |
+| `test/core/network/api_error_test.dart` | Error parsing tests for `parseKnownApiErrorCode` and `parseApiError`, including Laravel-style validation/error payload edge cases.         |
+| `test/support/http_stub_adapter.dart` | Shared stub HTTP adapter used by core tests to drive deterministic Dio responses without real network calls.                               |
 
 ---
 
@@ -149,7 +156,7 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 
 - **ThemeExtension + single seed** – One place for tokens; tenant/brand = different `ThemeData`/seed.
 - **Context extension** – `context.appTheme` / `context.appSpacing` so screens stay short and consistent.
-- **Smoke test** – Verifies app and shell load; no dead counter test.
+- **Core tests** – Auth and networking behavior covered with deterministic adapter-based tests (service state, API contracts, interceptors, health and error parsing).
 - **Docs** – This file, `docs/core/auth.md`, `docs/core/networking.md`.
 
 **Suggested next (when needed)**
@@ -157,12 +164,12 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 - **Env config** – Done. `lib/config/env.dart` provides `Env.apiBaseUrl` and `Env.webAppUrl` from `--dart-define`; `Constants` uses them for API, health, and web links. Add more keys in env.dart if needed.
 - **Route registration** – If many features, register routes from a list or config so adding a feature = one entry.
 - **Verify screen** – Optional **Log out** control if product wants users to switch accounts or leave a stuck unverified session without contacting support (not required if that flow is intentionally impossible).
-- **Feature tests** – Add navigation or screen-level tests when flows become critical.
+- **Feature/UI tests** – Add navigation or screen-level tests when flows become critical.
 - **CI** – Run `flutter analyze` and `flutter test` on push/PR once the repo is shared.
 
 ---
 
 ## Summary
 
-- **Done:** App entry, Material 3 + ThemeExtension theme, context theme helpers, **package imports** (`package:founta_app/...`) across lib; go_router + shell, config-driven nav (Home, Test, Settings); **core auth** (login/logout/register/forgot, token, auth/check, **`isEmailVerified`**, verify gate, **403 EMAIL_NOT_VERIFIED** hook, **3s polling** while unverified, resend + manual check); **shared networking** (Dio, `api_error` + **ApiErrorCodeEnum**, interceptors); **health check**; Home, **Settings** (logout, delete account, policy links), **Testing** (backend status + fetch); **url_launcher**; passing smoke test. **Auth screens:** Login, Register, Forgot Password, **Verify email**.
-- **Not yet:** Deeper tests, CI.
+- **Done:** App entry, Material 3 + ThemeExtension theme, context theme helpers, **package imports** (`package:founta_app/...`) across lib; go_router + shell, config-driven nav (Home, Test, Settings); **core auth** (login/logout/register/forgot, token, auth/check, **`isEmailVerified`**, verify gate, **403 EMAIL_NOT_VERIFIED** hook, **3s polling** while unverified, resend + manual check); **shared networking** (Dio, `api_error` + **ApiErrorCodeEnum**, interceptors); **health check**; Home, **Settings** (logout, delete account, policy links), **Testing** (backend status + fetch); **url_launcher**; passing smoke and core tests. **Auth screens:** Login, Register, Forgot Password, **Verify email**.
+- **Not yet:** CI (analyze + test on push/PR), broader feature/widget tests for critical navigation and screen flows.
