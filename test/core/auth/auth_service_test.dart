@@ -6,8 +6,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import 'package:founta_app/core/auth/auth_service.dart';
-import 'package:founta_app/core/network/api_client.dart';
+import 'package:flutter_app/core/auth/auth_service.dart';
+import 'package:flutter_app/core/network/api_client.dart';
 
 class _StubResponse {
   const _StubResponse({

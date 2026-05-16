@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:founta_app/core/network/api_error.dart';
-import 'package:founta_app/core/network/health.dart';
-import 'package:founta_app/features/testing/api/test_api.dart';
-import 'package:founta_app/theme/app_theme_extension.dart';
-import 'package:founta_app/theme/theme_extensions.dart';
+import 'package:flutter_app/core/network/api_error.dart';
+import 'package:flutter_app/core/network/health.dart';
+import 'package:flutter_app/features/testing/api/test_api.dart';
+import 'package:flutter_app/theme/app_theme_extension.dart';
+import 'package:flutter_app/theme/theme_extensions.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});

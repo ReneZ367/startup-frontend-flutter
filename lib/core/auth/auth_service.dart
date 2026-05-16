@@ -4,11 +4,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import 'package:founta_app/core/auth/auth_api.dart';
-import 'package:founta_app/core/network/api.dart';
-import 'package:founta_app/core/network/api_client.dart';
-import 'package:founta_app/core/network/api_error.dart';
-import 'package:founta_app/enums/api_error_code_enum.dart';
+import 'package:flutter_app/core/auth/auth_api.dart';
+import 'package:flutter_app/core/network/api.dart';
+import 'package:flutter_app/core/network/api_client.dart';
+import 'package:flutter_app/core/network/api_error.dart';
+import 'package:flutter_app/enums/api_error_code_enum.dart';
 
 bool _isEmailNotVerifiedForbidden(DioException e) {
   return e.response?.statusCode == 403 &&

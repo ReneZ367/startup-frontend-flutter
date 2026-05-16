@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import 'package:founta_app/core/network/api.dart';
-import 'package:founta_app/core/network/api_client.dart';
+import 'package:flutter_app/core/network/api.dart';
+import 'package:flutter_app/core/network/api_client.dart';
 
 import '../../support/http_stub_adapter.dart';
 

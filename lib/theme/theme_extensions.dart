@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:founta_app/theme/app_theme_extension.dart';
+import 'package:flutter_app/theme/app_theme_extension.dart';
 
 /// Convenience getters for app theme from [BuildContext].
 /// Use in widgets: `context.appTheme`, `context.appSpacing`.

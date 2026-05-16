@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:founta_app/config/navigation/app_navigation_config.dart';
-import 'package:founta_app/core/auth/auth_service.dart';
-import 'package:founta_app/core/network/api_error.dart';
-import 'package:founta_app/theme/theme_extensions.dart';
+import 'package:flutter_app/config/navigation/app_navigation_config.dart';
+import 'package:flutter_app/core/auth/auth_service.dart';
+import 'package:flutter_app/core/network/api_error.dart';
+import 'package:flutter_app/theme/theme_extensions.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

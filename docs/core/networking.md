@@ -68,7 +68,7 @@ When a request fails, Dio throws `DioException`. The response body is in `e.resp
 Use the shared helper `parseApiError` from `lib/core/network/api_error.dart`:
 
 ```dart
-import 'package:founta_app/core/network/api_error.dart';
+import 'package:flutter_app/core/network/api_error.dart';
 
 // In catch block:
 setState(() => _error = parseApiError(e, fallbackPrefix: 'Login failed'));

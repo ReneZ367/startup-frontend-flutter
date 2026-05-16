@@ -1,4 +1,4 @@
-import 'package:founta_app/core/network/api_client.dart';
+import 'package:flutter_app/core/network/api_client.dart';
 
 /// GET [endpoint]. Optional [params] as query parameters.
 Future<dynamic> apiGet(String endpoint, {Map<String, dynamic>? params}) async {
