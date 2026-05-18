@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-import 'package:founta_app/config/router/app_router.dart';
-import 'package:founta_app/theme/app_theme.dart';
+import 'package:flutter_app/config/router/app_router.dart';
+import 'package:flutter_app/theme/app_theme.dart';
 
-class FountaApp extends StatelessWidget {
-  const FountaApp({super.key});
+class FlutterApp extends StatelessWidget {
+  const FlutterApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     final router = createAppRouter();
 
     return MaterialApp.router(
-      title: 'Founta App',
+      title: 'Flutter App',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:founta_app/theme/theme_extensions.dart';
+import 'package:flutter_app/theme/theme_extensions.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -38,7 +38,7 @@ class HomeScreen extends StatelessWidget {
                     SizedBox(width: context.appSpacing.sm),
                     Expanded(
                       child: Text(
-                        'Welcome to Founta',
+                        'Welcome to Flutter',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ),

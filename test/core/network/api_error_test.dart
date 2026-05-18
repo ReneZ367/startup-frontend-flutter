@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:founta_app/core/network/api_error.dart';
-import 'package:founta_app/enums/api_error_code_enum.dart';
+import 'package:flutter_app/core/network/api_error.dart';
+import 'package:flutter_app/enums/api_error_code_enum.dart';
 
 void main() {
   group('parseKnownApiErrorCode', () {

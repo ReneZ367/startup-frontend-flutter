@@ -1,4 +1,4 @@
-import 'package:founta_app/core/network/api.dart';
+import 'package:flutter_app/core/network/api.dart';
 
 class DeleteAccountApi {
   Future<void> deleteAccount() async {

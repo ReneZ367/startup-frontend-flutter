@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
-import 'package:founta_app/enums/api_error_code_enum.dart';
+import 'package:flutter_app/enums/api_error_code_enum.dart';
 
 final Map<String, ApiErrorCodeEnum> _apiErrorCodeByWireValue = {
   for (final v in ApiErrorCodeEnum.values) v.value: v,

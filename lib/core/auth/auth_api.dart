@@ -1,7 +1,7 @@
-import 'package:founta_app/core/network/api.dart';
+import 'package:flutter_app/core/network/api.dart';
 
 class AuthApi {
-  static const String _deviceName = 'founta_app';
+  static const String _deviceName = 'flutter_app';
 
   /// Parses `GET user/account/email-verification` (relative to the configured API base URL; e.g. `{ "email_verified": true, "email_verified_at": "..." }`).
   /// Use a path without a leading slash so Dio keeps the base URL path prefix (e.g. `.../api/v1/`).

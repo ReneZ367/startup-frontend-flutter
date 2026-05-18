@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:founta_app/app.dart';
-import 'package:founta_app/core/auth/auth_service.dart';
+import 'package:flutter_app/app.dart';
+import 'package:flutter_app/core/auth/auth_service.dart';
 
 void main() {
   testWidgets('App loads and shows shell with Home', (WidgetTester tester) async {
@@ -12,7 +12,7 @@ void main() {
       authService.isEmailVerified.value = true;
     });
 
-    await tester.pumpWidget(const FountaApp());
+    await tester.pumpWidget(const FlutterApp());
     await tester.pumpAndSettle();
 
     expect(find.text('Home'), findsWidgets);

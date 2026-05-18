@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import 'package:founta_app/constants.dart';
-import 'package:founta_app/core/network/api_error.dart';
-import 'package:founta_app/enums/api_error_code_enum.dart';
+import 'package:flutter_app/constants.dart';
+import 'package:flutter_app/core/network/api_error.dart';
+import 'package:flutter_app/enums/api_error_code_enum.dart';
 
 /// Key used to read/write the auth token in secure storage. Use the same key when storing after login.
 const String authTokenStorageKey = 'auth_token';

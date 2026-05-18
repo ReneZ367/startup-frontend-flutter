@@ -1,5 +1,5 @@
-import 'package:founta_app/constants.dart';
-import 'package:founta_app/core/network/api_client.dart';
+import 'package:flutter_app/constants.dart';
+import 'package:flutter_app/core/network/api_client.dart';
 
 /// URL for the backend health check (Laravel /up at app root).
 /// Uses the same host and scheme as [Constants.baseUrl] so it works in ddev (http) and prod.

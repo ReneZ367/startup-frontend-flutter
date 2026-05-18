@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:founta_app/theme/app_theme_extension.dart';
+import 'package:flutter_app/theme/app_theme_extension.dart';
 
 /// Default seed color for Material 3 palette. Change for branding/tenant themes.
 const Color _seedColor = Color(0xFF2196F3);

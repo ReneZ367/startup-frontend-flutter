@@ -75,8 +75,8 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 
 | File        | Role                                                                                                                                 |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `main.dart` | `authService.init()`; `onUnauthorized = () => authService.logout()`; **`onEmailNotVerified`** → debug log + `notifyEmailNotVerified()`; `runApp(FountaApp)`. |
-| `app.dart`  | `FountaApp`: `MaterialApp.router` with themes, `createAppRouter()`.                                                                |
+| `main.dart` | `authService.init()`; `onUnauthorized = () => authService.logout()`; **`onEmailNotVerified`** → debug log + `notifyEmailNotVerified()`; `runApp(FlutterApp)`. |
+| `app.dart`  | `FlutterApp`: `MaterialApp.router` with themes, `createAppRouter()`.                                                                |
 
 ---
 
@@ -129,7 +129,7 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 
 | File                                | Role                                                                                                                                         |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `test/widget_test.dart`             | Smoke test: sets `authService` logged-in + email verified, pumps `FountaApp`, `pumpAndSettle`, expects **at least one** `"Home"` (shell duplicates label). |
+| `test/widget_test.dart`             | Smoke test: sets `authService` logged-in + email verified, pumps `FutterApp`, `pumpAndSettle`, expects **at least one** `"Home"` (shell duplicates label). |
 | `test/core/auth/auth_service_test.dart` | Auth state lifecycle tests: init (no token / valid token / invalid token), login token storage, email-not-verified handling, logout cleanup. |
 | `test/core/auth/auth_api_test.dart` | Auth API contract tests: login/register payload shape and email verification status parsing/fallback behavior.                              |
 | `test/core/network/api_client_test.dart` | Interceptor tests: Bearer injection, 401 handling with token cleanup, login-path 401 exception, 403 `EMAIL_NOT_VERIFIED` callback.         |
@@ -171,5 +171,5 @@ Details: [docs/core/auth.md](core/auth.md), [docs/core/networking.md](core/netwo
 
 ## Summary
 
-- **Done:** App entry, Material 3 + ThemeExtension theme, context theme helpers, **package imports** (`package:founta_app/...`) across lib; go_router + shell, config-driven nav (Home, Test, Settings); **core auth** (login/logout/register/forgot, token, auth/check, **`isEmailVerified`**, verify gate, **403 EMAIL_NOT_VERIFIED** hook, **3s polling** while unverified, resend + manual check); **shared networking** (Dio, `api_error` + **ApiErrorCodeEnum**, interceptors); **health check**; Home, **Settings** (logout, delete account, policy links), **Testing** (backend status + fetch); **url_launcher**; passing smoke and core tests. **Auth screens:** Login, Register, Forgot Password, **Verify email**.
+- **Done:** App entry, Material 3 + ThemeExtension theme, context theme helpers, **package imports** (`package:flutter_app/...`) across lib; go_router + shell, config-driven nav (Home, Test, Settings); **core auth** (login/logout/register/forgot, token, auth/check, **`isEmailVerified`**, verify gate, **403 EMAIL_NOT_VERIFIED** hook, **3s polling** while unverified, resend + manual check); **shared networking** (Dio, `api_error` + **ApiErrorCodeEnum**, interceptors); **health check**; Home, **Settings** (logout, delete account, policy links), **Testing** (backend status + fetch); **url_launcher**; passing smoke and core tests. **Auth screens:** Login, Register, Forgot Password, **Verify email**.
 - **Not yet:** CI (analyze + test on push/PR), broader feature/widget tests for critical navigation and screen flows.
